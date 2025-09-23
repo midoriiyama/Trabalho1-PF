@@ -1,0 +1,37 @@
+Gestão de eventos — inscrições em atividades, status de pagamento.
+
+1. Modelagem com ADTs
+o Definir um tipo produto principal (pub type) para a entidade central (ex.:
+Task, Book, Ticket), com campos:
+▪ id: Int
+▪ titulo: String
+▪ descricao: String
+▪ data: String (ou outro campo temporal, conforme o tema)
+▪ status: Status
+o Definir um tipo soma para Status, ex.:
+o pub type Status {
+o Pendente
+o EmAndamento
+o Concluida
+o }
+o Usar pattern matching (case) para processar os valores.
+
+2. Operações mínimas
+o criar_<entidade>: constrói um valor válido (com validações).
+o adicionar_<entidade>: insere em uma lista imutável (List) e retorna a
+nova coleção.
+o atualizar_status: altera o status de uma entidade por id.
+o filtrar_por_status: filtra a lista por status.
+o remover_concluidas: retorna a coleção sem itens concluídos.
+o + 2 operações derivadas, como:
+▪ contar_por_status
+▪ percentual_concluidas
+▪ listar_proximas_datas
+
+3. Ciclo de projeto das funções
+Para cada função entregue, a equipe deve documentar:
+o Análise (problema a resolver, entradas/saídas)
+o Especificação (assinatura de tipo, propósito textual e exemplos de uso)
+o Implementação (código em Gleam)
+o Verificação (testes unitários)
+o Revisão (analisar clareza, composição, generalidade)

@@ -19,7 +19,7 @@ pub type Status {
 }
 
 pub type InscricaoErro {
-    InscricaoInvalida
+    IdJaExiste
 }
 
 ///A partir dos dados para criar uma nova inscrição, chama a função "verifica_id()".
@@ -27,7 +27,7 @@ pub type InscricaoErro {
 pub fn criar_inscricao(lista_insc: List(Inscricao), id: Int, nome_atividade: String, descricao: String, nome_participante: String, status_pagamento: Status, data: String) -> Result(Inscricao, InscricaoErro) {
     case verifica_id(lista_insc, id) {
         True -> Ok(Inscricao(id, nome_atividade, descricao, nome_participante, status_pagamento, data))
-        False -> Error(InscricaoInvalida)
+        False -> Error(IdJaExiste)
     }
 }
 
@@ -35,7 +35,7 @@ pub fn criar_inscricao_ex() {
     ///A lista_insc possui incrições com os ids 0, 1, 2, 3.
     let lista_insc: List(Inscricao) = lista_inscricoes()
     check.eq(criar_inscricao(lista_insc, 4, "a", "b", "c", Pendente, "d"), Ok(Inscricao(4, "a", "b", "c", Pendente, "d")))
-    check.eq(criar_inscricao(lista_insc, 3, "a", "b", "c", Pendente, "d"), Error(InscricaoInvalida))
+    check.eq(criar_inscricao(lista_insc, 3, "a", "b", "c", Pendente, "d"), Error(IdJaExiste))
 }
 
 ///A função verifica na lista de inscrição se já existe alguma inscrição com id equivalente ao "novo_id".
@@ -83,8 +83,11 @@ pub fn adicionar_na_lista_ex() {
 pub fn adicionar_inscricao(lista_insc: List(Inscricao), id: Int, nome_atividade: String, descricao: String, nome_participante: String, status_pagamento: Status, data: String) -> List(Inscricao) {
     let resultado = criar_inscricao(lista_insc, id, nome_atividade, descricao, nome_participante, status_pagamento, data)
     case resultado {
-        Ok(inscricao) -> adicionar_na_lista(lista_insc, inscricao)
-        Error(erro) -> lista_insc
+        Ok(inscricao) -> {  io.println("\nInscrição com id '" <> int.to_string(id) <> "' adicionada com sucesso!")
+                            adicionar_na_lista(lista_insc, inscricao)}
+        Error(erro) -> { io.print("\nErro ao adicionar inscrição com id '" <> int.to_string(id) <> "'")
+                         io.debug(erro)
+                         lista_insc}
     }
 }
 
@@ -105,12 +108,14 @@ pub fn adicionar_inscricao_ex() {
                                                                                 Inscricao(3, "a", "b", "c", Pendente, "d")])
 }
 
+
 ///A função atualiza o status da inscrição que possui o "id", para o "novo_status" e produz
 ///a nova lista com o status modificado.
 pub fn atualizar_status_pagamento(lista_insc: List(Inscricao), id: Int, novo_status: Status) -> List(Inscricao) {
     case lista_insc {
         [] -> []
         [primeiro, ..resto] if primeiro.id == id -> {
+            io.println("\nStatus de pagamento da Inscrição '" <> int.to_string(id) <>"' atualizado com sucesso!")
             let inscricao: List(Inscricao) = [Inscricao(primeiro.id, primeiro.nome_atividade, primeiro.descricao, primeiro.nome_participante, novo_status, primeiro.data)]
             list.append(inscricao, resto)
         }
@@ -232,7 +237,7 @@ pub fn contar_todos_status(lista_insc: List(Inscricao)) -> String {
 ///que possuem os status: Concluido, Cancelado e Pendente.
 pub fn contar_todos_status_aux(lista_insc: List(Inscricao), concluido: Int, cancelado: Int, pendente: Int) -> String {
     case lista_insc {
-        [] -> "Concluído: " <> int.to_string(concluido) <> "\nCancelado: " <> int.to_string(cancelado) <> "\nPendente: " <> int.to_string(pendente)
+        [] -> "\nConcluído: " <> int.to_string(concluido) <> "\nCancelado: " <> int.to_string(cancelado) <> "\nPendente: " <> int.to_string(pendente)
         [primeiro, ..resto] if primeiro.status_pagamento == Concluido -> contar_todos_status_aux(resto, concluido + 1, cancelado, pendente)
         [primeiro, ..resto] if primeiro.status_pagamento == Cancelado -> contar_todos_status_aux(resto, concluido, cancelado + 1, pendente)
         [primeiro, ..resto] if primeiro.status_pagamento == Pendente -> contar_todos_status_aux(resto, concluido, cancelado, pendente + 1)
@@ -263,16 +268,47 @@ fn lista_inscricoes() -> List(Inscricao) {
      Inscricao(3, "a", "b", "c", Pendente, "d")]
 }
 
+
 pub fn main() {
-    io.debug(criar_inscricao_ex())
-    io.debug(verifica_id_ex())
-    io.debug(adicionar_na_lista_ex())
-    io.debug(adicionar_inscricao_ex())
-    io.debug(atualizar_status_pagamento_ex())
-    io.debug(filtrar_por_status_ex())
-    io.debug(remover_cancelados_ex())
-    io.debug(remover_concluidos_ex())
-    io.debug(contar_um_status_ex())
-    io.debug(contar_todos_status_ex())
+
+    let l1: List(Inscricao) = []
+    let l2: List(Inscricao) = adicionar_inscricao(l1, 0, "Festa", "Festa de Debutante da Isa", "Isabella", Pendente, "21/10/2026")
+    let l3: List(Inscricao) = adicionar_inscricao(l2, 0, "Festa", "Festa de Aniversário", "João", Pendente, "27/02/2026")
+    let l4: List(Inscricao) = adicionar_inscricao(l3, 1, "Festa", "Festa de Aniversário", "Maria", Pendente, "20/12/2026")
+    let l5: List(Inscricao) = adicionar_inscricao(l4, 2, "Festa", "Festa de Casamento", "Akemi", Pendente, "02/07/2026")
+    let l6: List(Inscricao) = adicionar_inscricao(l5, 3, "Festa", "Festa de Despedida de Solteiro", "Pedro", Pendente, "27/12/2026")
+    io.println(contar_todos_status(l6))
+    let l7: List(Inscricao) = atualizar_status_pagamento(l6, 2, Concluido)
+    let l8: List(Inscricao) = atualizar_status_pagamento(l7, 1, Cancelado)
+    io.println(contar_todos_status(l8))
+    let l_pendente: List(Inscricao) = filtrar_por_status(l8, Pendente)
+    let l_concluido: List(Inscricao) = filtrar_por_status(l8, Concluido)
+    let l_cancelado: List(Inscricao) = filtrar_por_status(l8, Cancelado)
+    io.print("\n")
+    io.debug(l_pendente)
+    io.debug(l_concluido)
+    io.debug(l_cancelado)
+    let l9: List(Inscricao) = remover_cancelados(l8)
+    io.println(contar_todos_status(l9))
+    let l10: List(Inscricao) = remover_concluidos(l9)
+    io.println(contar_todos_status(l10))
+    io.debug(contar_um_status(l10, Concluido))
+    io.debug(contar_um_status(l10, Cancelado))
+    io.debug(contar_um_status(l10, Pendente))
+
+
+    
+
+    ///Testes Ex:
+    //io.debug(criar_inscricao_ex())
+    //io.debug(verifica_id_ex())
+    //io.debug(adicionar_na_lista_ex())
+    //io.debug(adicionar_inscricao_ex())
+    //io.debug(atualizar_status_pagamento_ex())
+    //io.debug(filtrar_por_status_ex())
+    //io.debug(remover_cancelados_ex())
+    //io.debug(remover_concluidos_ex())
+    //io.debug(contar_um_status_ex())
+    //io.debug(contar_todos_status_ex())
 }
 

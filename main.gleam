@@ -5,7 +5,12 @@ import gleam/int
 import gleam/list
 
 pub type Inscricao {
-    Inscricao(id: Int, nome_atividade: String, descricao: String, nome_participante: String, status_pagamento: Status, data: String)
+    Inscricao(id: Int,
+              nome_atividade: String, 
+              descricao: String, 
+              nome_participante: String, 
+              status_pagamento: Status, 
+              data: String)
 }
 
 pub type Status {

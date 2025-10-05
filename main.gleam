@@ -1,4 +1,3 @@
-import gleam/string
 import gleam/io 
 import sgleam/check
 import gleam/int
@@ -32,14 +31,31 @@ pub fn criar_inscricao(lista_insc: List(Inscricao), id: Int, nome_atividade: Str
     }
 }
 
+pub fn criar_inscricao_ex() {
+    ///A lista_insc possui incrições com os ids 0, 1, 2, 3.
+    let lista_insc: List(Inscricao) = lista_inscricoes()
+    check.eq(criar_inscricao(lista_insc, 4, "a", "b", "c", Pendente, "d"), Ok(Inscricao(4, "a", "b", "c", Pendente, "d")))
+    check.eq(criar_inscricao(lista_insc, 3, "a", "b", "c", Pendente, "d"), Error(InscricaoInvalida))
+}
+
 ///A função verifica na lista de inscrição se já existe alguma inscrição com id equivalente ao "novo_id".
 ///Produz True se o "novo_id" não está na lista e False se já estiver na lista.
 pub fn verifica_id(lista_insc: List(Inscricao), novo_id: Int) -> Bool {
     case lista_insc {
         [] -> True
         [primeiro, ..resto] if primeiro.id == novo_id -> False
+        [primeiro, ..resto] if novo_id < 0 -> False
         [primeiro, ..resto] -> verifica_id(resto, novo_id)
     }
+}
+
+pub fn verifica_id_ex() {
+    ///A lista_insc possui incrições com os ids 0, 1, 2, 3.
+    let lista_insc: List(Inscricao) = lista_inscricoes()
+    check.eq(verifica_id([], 3), True)
+    check.eq(verifica_id(lista_insc, 4), True) 
+    check.eq(verifica_id(lista_insc, 2), False)
+    check.eq(verifica_id(lista_insc, -1), False)
 }
 
 ///A função adiciona na lista de inscrição uma inscrição e produz uma nova lista de inscrição.
@@ -48,14 +64,45 @@ pub fn adicionar_na_lista(lista_insc: List(Inscricao), inscricao: Inscricao) -> 
     list.append(lista_insc, lista)
 }
 
+pub fn adicionar_na_lista_ex() {
+    ///A lista_insc possui inscrições com os ids 0, 1, 2, 3:
+    ///[Inscricao(0, "a", "b", "c", Concluido, "d"), Inscricao(1, "a", "b", "c", Concluido, "d"),
+    /// Inscricao(2, "a", "b", "c", Cancelado, "d"), Inscricao(3, "a", "b", "c", Pendente, "d")]
+    let lista_insc: List(Inscricao) = lista_inscricoes()
+    let insc: Inscricao = Inscricao(4, "a", "b", "c", Pendente, "d")
+    check.eq(adicionar_na_lista(lista_insc, insc), [Inscricao(0, "a", "b", "c", Concluido, "d"),
+                                                    Inscricao(1, "a", "b", "c", Concluido, "d"),
+                                                    Inscricao(2, "a", "b", "c", Cancelado, "d"),
+                                                    Inscricao(3, "a", "b", "c", Pendente, "d"),
+                                                    Inscricao(4, "a", "b", "c", Pendente, "d")])
+}
+
+///A função que deve ser chamada para criar e adicionar uma nova inscrição.
 ///A partir do resultado da função "criar_inscricao()", a função adiciona ou não a nova inscrição,
 ///produzindo uma nova lista modificada ou retornando a mesma lista sem modificações.
 pub fn adicionar_inscricao(lista_insc: List(Inscricao), id: Int, nome_atividade: String, descricao: String, nome_participante: String, status_pagamento: Status, data: String) -> List(Inscricao) {
-    let resultado = criar_inscricao(lista_insc, id, nome_atividade, descricao, nome_participante, Concluido, data)
-    let nova_inscricao = case resultado {
+    let resultado = criar_inscricao(lista_insc, id, nome_atividade, descricao, nome_participante, status_pagamento, data)
+    case resultado {
         Ok(inscricao) -> adicionar_na_lista(lista_insc, inscricao)
         Error(erro) -> lista_insc
     }
+}
+
+pub fn adicionar_inscricao_ex() {
+    ///A lista_insc possui inscrições com os ids 0, 1, 2, 3:
+    ///[Inscricao(0, "a", "b", "c", Concluido, "d"), Inscricao(1, "a", "b", "c", Concluido, "d"),
+    /// Inscricao(2, "a", "b", "c", Cancelado, "d"), Inscricao(3, "a", "b", "c", Pendente, "d")]
+    let lista_insc: List(Inscricao) = lista_inscricoes()
+    check.eq(adicionar_inscricao(lista_insc, 4, "a", "b", "c", Pendente, "d"), [Inscricao(0, "a", "b", "c", Concluido, "d"),
+                                                                                Inscricao(1, "a", "b", "c", Concluido, "d"),
+                                                                                Inscricao(2, "a", "b", "c", Cancelado, "d"),
+                                                                                Inscricao(3, "a", "b", "c", Pendente, "d"),
+                                                                                Inscricao(4, "a", "b", "c", Pendente, "d")])
+
+    check.eq(adicionar_inscricao(lista_insc, 3, "a", "b", "c", Pendente, "d"), [Inscricao(0, "a", "b", "c", Concluido, "d"),
+                                                                                Inscricao(1, "a", "b", "c", Concluido, "d"),
+                                                                                Inscricao(2, "a", "b", "c", Cancelado, "d"),
+                                                                                Inscricao(3, "a", "b", "c", Pendente, "d")])
 }
 
 ///A função atualiza o status da inscrição que possui o "id", para o "novo_status" e produz
@@ -71,6 +118,27 @@ pub fn atualizar_status_pagamento(lista_insc: List(Inscricao), id: Int, novo_sta
     }
 }
 
+pub fn atualizar_status_pagamento_ex() {
+    ///A lista_insc possui inscrições com os ids 0, 1, 2, 3:
+    ///[Inscricao(0, "a", "b", "c", Concluido, "d"), Inscricao(1, "a", "b", "c", Concluido, "d"),
+    /// Inscricao(2, "a", "b", "c", Cancelado, "d"), Inscricao(3, "a", "b", "c", Pendente, "d")]
+    let lista_insc: List(Inscricao) = lista_inscricoes()
+    check.eq(atualizar_status_pagamento(lista_insc, 3, Cancelado), [Inscricao(0, "a", "b", "c", Concluido, "d"),
+                                                                    Inscricao(1, "a", "b", "c", Concluido, "d"),
+                                                                    Inscricao(2, "a", "b", "c", Cancelado, "d"),
+                                                                    Inscricao(3, "a", "b", "c", Cancelado, "d")])
+
+    check.eq(atualizar_status_pagamento(lista_insc, 2, Concluido), [Inscricao(0, "a", "b", "c", Concluido, "d"),
+                                                                    Inscricao(1, "a", "b", "c", Concluido, "d"),
+                                                                    Inscricao(2, "a", "b", "c", Concluido, "d"),
+                                                                    Inscricao(3, "a", "b", "c", Pendente, "d")])
+                                                                
+    check.eq(atualizar_status_pagamento(lista_insc, 0, Pendente), [Inscricao(0, "a", "b", "c", Pendente, "d"),
+                                                                    Inscricao(1, "a", "b", "c", Concluido, "d"),
+                                                                    Inscricao(2, "a", "b", "c", Cancelado, "d"),
+                                                                    Inscricao(3, "a", "b", "c", Pendente, "d")])
+}
+
 ///A partir de um Status - Concluido, Cancelado, Pendente - a função produz uma lista com as inscrições
 ///que possuem status equivalente ao "status".
 pub fn filtrar_por_status(lista_insc: List(Inscricao), status: Status) -> List(Inscricao) {
@@ -81,6 +149,18 @@ pub fn filtrar_por_status(lista_insc: List(Inscricao), status: Status) -> List(I
     }
 }
 
+pub fn filtrar_por_status_ex() {
+    ///lista_insc:
+    ///[Inscricao(0, "a", "b", "c", Concluido, "d"), Inscricao(1, "a", "b", "c", Concluido, "d"),
+    /// Inscricao(2, "a", "b", "c", Cancelado, "d"), Inscricao(3, "a", "b", "c", Pendente, "d")]
+    let lista_insc: List(Inscricao) = lista_inscricoes()
+    check.eq(filtrar_por_status(lista_insc, Concluido), [Inscricao(0, "a", "b", "c", Concluido, "d"),
+                                                         Inscricao(1, "a", "b", "c", Concluido, "d")])
+    check.eq(filtrar_por_status(lista_insc, Pendente), [Inscricao(3, "a", "b", "c", Pendente, "d")])
+    check.eq(filtrar_por_status(lista_insc, Cancelado), [Inscricao(2, "a", "b", "c", Cancelado, "d")])
+}
+
+
 ///A partir de uma lista de incrição, a função produz uma nova lista de inscrições sem
 ///as inscrições que possuem o status "Concluido"
 pub fn remover_concluidos(lista_insc: List(Inscricao)) -> List(Inscricao) {
@@ -90,6 +170,15 @@ pub fn remover_concluidos(lista_insc: List(Inscricao)) -> List(Inscricao) {
         [primeiro, ..resto] -> [primeiro, ..remover_concluidos(resto)]
         
     }
+}
+
+pub fn remover_concluidos_ex() {
+    ///lista_insc:
+    ///[Inscricao(0, "a", "b", "c", Concluido, "d"), Inscricao(1, "a", "b", "c", Concluido, "d"),
+    /// Inscricao(2, "a", "b", "c", Cancelado, "d"), Inscricao(3, "a", "b", "c", Pendente, "d")]
+    let lista_insc: List(Inscricao) = lista_inscricoes()
+    check.eq(remover_concluidos(lista_insc), [Inscricao(2, "a", "b", "c", Cancelado, "d"),
+                                              Inscricao(3, "a", "b", "c", Pendente, "d")])
 }
 
 ///A partir de uma lista de incrição, a função produz uma nova lista de inscrições sem
@@ -103,14 +192,34 @@ pub fn remover_cancelados(lista_insc: List(Inscricao)) -> List(Inscricao) {
     }
 }
 
+pub fn remover_cancelados_ex() {
+    ///lista_insc:
+    ///[Inscricao(0, "a", "b", "c", Concluido, "d"), Inscricao(1, "a", "b", "c", Concluido, "d"),
+    /// Inscricao(2, "a", "b", "c", Cancelado, "d"), Inscricao(3, "a", "b", "c", Pendente, "d")]
+    let lista_insc: List(Inscricao) = lista_inscricoes()
+    check.eq(remover_cancelados(lista_insc), [Inscricao(0, "a", "b", "c", Concluido, "d"),
+                                              Inscricao(1, "a", "b", "c", Concluido, "d"),
+                                              Inscricao(3, "a", "b", "c", Pendente, "d")])
+}
+
 ///A partir de uma lista de inscrição, a função produz o número de inscrições que possuem status
 ///correspondente ao determinado "status".
 pub fn contar_um_status(lista_insc: List(Inscricao), status: Status) -> Int {
     case lista_insc {
         [] -> 0
         [primeiro, ..resto] if primeiro.status_pagamento == status -> 1 + contar_um_status(resto, status)
-        [primeiro, ..resto] -> contar_um_status(resto, status)
+        [_, ..resto] -> contar_um_status(resto, status)
     }
+}
+
+pub fn contar_um_status_ex() {
+    ///lista_insc:
+    ///[Inscricao(0, "a", "b", "c", Concluido, "d"), Inscricao(1, "a", "b", "c", Concluido, "d"),
+    /// Inscricao(2, "a", "b", "c", Cancelado, "d"), Inscricao(3, "a", "b", "c", Pendente, "d")]
+    let lista_insc: List(Inscricao) = lista_inscricoes()
+    check.eq(contar_um_status(lista_insc, Concluido), 2)
+    check.eq(contar_um_status(lista_insc, Pendente), 1)
+    check.eq(contar_um_status(lista_insc, Cancelado), 1)
 }
 
 ///A função chama a função auxiliar "contar_todos_status_aux()", a inicializando com valores nulos.
@@ -131,14 +240,39 @@ pub fn contar_todos_status_aux(lista_insc: List(Inscricao), concluido: Int, canc
     }
 }
 
-pub fn percentual_concluidas(lista_insc: List(Inscricao)) -> Float {
+pub fn contar_todos_status_ex() {
+    ///lista_insc:
+    ///[Inscricao(0, "a", "b", "c", Concluido, "d"), Inscricao(1, "a", "b", "c", Concluido, "d"),
+    /// Inscricao(2, "a", "b", "c", Cancelado, "d"), Inscricao(3, "a", "b", "c", Pendente, "d")]
+    let lista_insc: List(Inscricao) = lista_inscricoes()
+    check.eq(contar_todos_status(lista_insc), "Concluído: 2\nCancelado: 1\nPendente: 1")
+}
 
+//pub fn percentual_concluidas(lista_insc: List(Inscricao)) -> Float {
+//
+//}
+//
+//pub fn percentual_concluidas_ex(lista_insc: List(Inscricao)) {
+//
+//}
+
+fn lista_inscricoes() -> List(Inscricao) {
+    [Inscricao(0, "a", "b", "c", Concluido, "d"),
+     Inscricao(1, "a", "b", "c", Concluido, "d"),
+     Inscricao(2, "a", "b", "c", Cancelado, "d"),
+     Inscricao(3, "a", "b", "c", Pendente, "d")]
 }
 
 pub fn main() {
-    let lista_insc: List(Inscricao) = [Inscricao(0, "a", "b", "c", Concluido, "d"), Inscricao(1, "a", "b", "c", Concluido, "d"), Inscricao(2, "a", "b", "c", Cancelado, "d"), Inscricao(3, "a", "b", "c", Pendente, "d")]
-    let lista_insc2: List(Inscricao) = adicionar_inscricao(lista_insc, 4, "a", "b", "c", Cancelado, "d")
-    io.debug(lista_insc3)
-
+    io.debug(criar_inscricao_ex())
+    io.debug(verifica_id_ex())
+    io.debug(adicionar_na_lista_ex())
+    io.debug(adicionar_inscricao_ex())
+    io.debug(atualizar_status_pagamento_ex())
+    io.debug(filtrar_por_status_ex())
+    io.debug(remover_cancelados_ex())
+    io.debug(remover_concluidos_ex())
+    io.debug(contar_um_status_ex())
+    io.debug(contar_todos_status_ex())
 }
 

@@ -1,14 +1,15 @@
-import gleam/io 
+import gleam/io
 import sgleam/check
 import gleam/int
 import gleam/list
+import gleam/float
 
 pub type Inscricao {
     Inscricao(id: Int,
-              nome_atividade: String, 
-              descricao: String, 
-              nome_participante: String, 
-              status_pagamento: Status, 
+              nome_atividade: String,
+              descricao: String,
+              nome_participante: String,
+              status_pagamento: Status,
               data: String)
 }
 
@@ -53,7 +54,7 @@ pub fn verifica_id_ex() {
     ///A lista_insc possui incrições com os ids 0, 1, 2, 3.
     let lista_insc: List(Inscricao) = lista_inscricoes()
     check.eq(verifica_id([], 3), True)
-    check.eq(verifica_id(lista_insc, 4), True) 
+    check.eq(verifica_id(lista_insc, 4), True)
     check.eq(verifica_id(lista_insc, 2), False)
     check.eq(verifica_id(lista_insc, -1), False)
 }
@@ -253,13 +254,22 @@ pub fn contar_todos_status_ex() {
     check.eq(contar_todos_status(lista_insc), "Concluído: 2\nCancelado: 1\nPendente: 1")
 }
 
-//pub fn percentual_concluidas(lista_insc: List(Inscricao)) -> Float {
-//
-//}
-//
-//pub fn percentual_concluidas_ex(lista_insc: List(Inscricao)) {
-//
-//}
+pub fn percentual_concluidas(lista_insc: List(Inscricao)) -> Float {
+    case list.length(lista_insc) > 0 {
+        True -> float.to_precision(int.to_float(contar_um_status(lista_insc, Concluido)) /. int.to_float(list.length(lista_insc)) *. 100.0, 2)
+        False -> 0.0
+    }
+}
+
+pub fn percentual_concluidas_ex() {
+    ///lista_insc:
+    ///[Inscricao(0, "a", "b", "c", Concluido, "d"), Inscricao(1, "a", "b", "c", Concluido, "d"),
+    /// Inscricao(2, "a", "b", "c", Cancelado, "d"), Inscricao(3, "a", "b", "c", Pendente, "d")]
+    let lista_insc: List(Inscricao) = lista_inscricoes()
+    check.eq(percentual_concluidas(lista_insc), 33.33)
+    check.eq(percentual_concluidas([]), 0.0)
+
+}
 
 fn lista_inscricoes() -> List(Inscricao) {
     [Inscricao(0, "a", "b", "c", Concluido, "d"),
@@ -295,6 +305,7 @@ pub fn main() {
     io.debug(contar_um_status(l10, Concluido))
     io.debug(contar_um_status(l10, Cancelado))
     io.debug(contar_um_status(l10, Pendente))
+    io.debug(percentual_concluidas(l9))
 
 
     
